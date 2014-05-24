@@ -18,16 +18,128 @@ Date: 2014-02-01
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     
     <!-- Custom styles for this template -->
+    <style>
+       #map-canvas {
+        
+        height: 300px;
+        width: 300px;
+        
+        margin: 0px;
+        padding: 0px
+      }
+    </style> 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/jumbotron.css" rel="stylesheet">  
+    <link href="css/contact_form.css" rel="stylesheet">
+    <script src="js/jquery.1.11.0.min.js"></script> 
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
    
-<script>   
-$(document).ready(function(){  
-	
- 
+<script type="text/javascript">
+// create the map 
+	var map;
+	function initialize() {
+  	
+  		var myLatlng = new google.maps.LatLng(45.517677,-122.679897);
+		var mapOptions = { zoom: 13, center: myLatlng, mapTypeId: google.maps.MapTypeId.HYBRID };// satillite view
+		map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+			
+	  	var marker = new google.maps.Marker({
+	    	position: myLatlng,
+	      	map: map,
+	      	title: "eWeaver Solutions, LLC",
+	      	visible: true,
+			clickable: true,
+			//icon: thumbnail
+			//shadow: 'http://www.mysite.com/markershadow.png'
+		});
 
+		var infowindow = new google.maps.InfoWindow({
+			content: 'eWeaver Solutions, LLC<br>921 SW 6th AVE #3025<br>Portland, OR 97204'
+		});
+
+		infowindow.open(map,marker);
+		
+		google.maps.event.addListener(marker, 'click', function() {
+			
+			infowindow.open(map,marker);
+		});
+		
+  
+
+	} // end function initialize() {
+
+	google.maps.event.addDomListener(window, 'load', initialize);
+	 
+
+$(document).ready(function() {
+	
+		
+
+
+	
+    $("#submit_btn").click(function() {
+        //get input field values
+        var user_name       = $('input[name=name]').val();
+        var user_email      = $('input[name=email]').val();
+        var user_phone      = $('input[name=phone]').val();
+        var user_message    = $('textarea[name=message]').val();
+       
+        //simple validation at client's end
+        //we simply change border color to red if empty field using .css()
+        var proceed = true;
+        if(user_name==""){
+            $('input[name=name]').css('border-color','red');
+            proceed = false;
+        }
+        if(user_email==""){
+            $('input[name=email]').css('border-color','red');
+            proceed = false;
+        }
+        if(user_phone=="") {    
+            $('input[name=phone]').css('border-color','red');
+            proceed = false;
+        }
+        if(user_message=="") {  
+            $('textarea[name=message]').css('border-color','red');
+            proceed = false;
+        }
+
+        //everything looks good! proceed...
+        if(proceed)
+        {
+            //data to be sent to server
+            post_data = {'userName':user_name, 'userEmail':user_email, 'userPhone':user_phone, 'userMessage':user_message};
+           
+            //Ajax post data to server
+            $.post('contact_me.php', post_data, function(response){  
+               
+                //load json data from server and output message    
+                if(response.type == 'error')
+                {
+                    output = '<div class="error">'+response.text+'</div>';
+                }else{
+               
+                    output = '<div class="success">'+response.text+'</div>';
+                   
+                    //reset values in all input fields
+                    $('#contact_form input').val('');
+                    $('#contact_form textarea').val('');
+                }
+               
+                $("#result").hide().html(output).slideDown();
+            }, 'json');
+           
+        }
+    });
+   
+    //reset previously set border colors and hide all message on .keyup()
+    $("#contact_form input, #contact_form textarea").keyup(function() {
+        $("#contact_form input, #contact_form textarea").css('border-color','');
+        $("#result").slideUp();
+    });
+   
 });
-</script>   
+</script>  
     
  </head>
 
@@ -48,9 +160,10 @@ $(document).ready(function(){
           <ul class="nav navbar-nav">
           <li><a href="index.html">Home</a></li>
           <li><a href="solutions.html">Solutions</a></li>
-          <li><a href="services.html">Services</a></li>
+          <li><a href="portfolio.html">Portfolio</a></li>
+          <!-- <li><a href="services.html">Services</a></li> -->
           <li class="active"><a href="contact.html">Contact Us</a></li>
-          <li><a href="about.html">About</a></li>
+          <!-- <li><a href="about.html">About</a></li> -->
             
            
           </ul>
@@ -60,12 +173,82 @@ $(document).ready(function(){
     </div>
   	
   	
-    <div class="container">
+   <DIV align="center"><img class="featurette-image img-responsive" width="100%" src="./images/bottle.png"></DIV><br>
+
       
-      	<br>
-   		<div class="well">
-   			<p>Contact US!</p>  
-   		</div> <!-- /well -->
+    <div class="container marketing">
+
+	<hr class="featurette-divider">
+      <!-- Three columns of text below the carousel -->
+      <div class="row">
+        <div class="col-lg-4">
+          
+          <h2>~ REACH US ~</h2>
+          <p>We would love to hear from you!<BR> Please use the contact form below and we will get back to you within 24 hours.</p>
+           <fieldset id="contact_form">
+				<legend>Tell Us About Your Project!</legend>
+				<div id="result"></div>
+			    <label for="name"><span>Name</span>
+			    <input type="text" name="name" id="name" placeholder="Enter Your Name" />
+			    </label>
+			   
+			    <label for="email"><span>Email Address</span>
+			    <input type="email" name="email" id="email" placeholder="Enter Your Email" />
+			    </label>
+			   
+			    <label for="phone"><span>Phone</span>
+			    <input type="text" name="phone" id="phone" placeholder="Phone Number" />
+			    </label>
+			   
+			    <label for="message"><span>Message</span>
+			    <textarea name="message" id="message" placeholder="Enter Your Name"></textarea>
+			    </label>
+			   
+			    <label><span>&nbsp;</span>
+			    <button class="submit_btn" id="submit_btn">Submit</button>
+			    </label>
+			</fieldset>	
+          
+        </div><!-- /.col-lg-4 -->
+        <div class="col-lg-4" >
+           
+          <h2>~ OUR INFO ~</h2>
+          <p>
+          eWeaver Solutions, LLC<br>
+          921 SW 6th AVE # 3025<br>
+          Portland, OR 97204<br>
+          <br>
+          <img width=50px height=50px src="./images/phone.png" ><b>503-568-1833</b><br>
+          <b><a href="mailto:info@eWeaverSolutions.com"><img width=50px height=50px src="./images/mail.png" >info@eWeaverSolutions.com</a></b><br> 
+          <a target=_blank href="https://www.facebook.com/eWeaverSolutions"><img width=50px height=50px src="./images/facebook.png" ></a><br> 		   
+          <a target=_blank href="https://www.linkedin.com/company/eweaver-solutions-llc"><img width=50px height=50px src="./images/linkedin.png" ></a>
+          </p>
+         
+        </div><!-- /.col-lg-4 -->
+        <div class="col-lg-4">
+          
+          <h2>~ FIND US ~</h2>
+          <P>
+          	<p><div id="map-canvas"></div></p>
+         
+          	
+          </P>
+         
+        </div><!-- /.col-lg-4 -->
+      </div><!-- /.row --> 
+     
+     
+     
+      
+   	 
+   			 
+   		
+   	 
+   	
+   	
+	   		
+
+    
    	
       	<footer>
       		<hr>
@@ -76,7 +259,7 @@ $(document).ready(function(){
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="js/jquery.1.11.0.min.js"></script>
+ 
     <script src="js/bootstrap.min.js"></script>
   </body>
 </html>
